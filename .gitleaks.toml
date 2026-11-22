@@ -5,12 +5,14 @@
 # for template variables and known false positives.
 #
 # Docs: https://github.com/gitleaks/gitleaks
-# Version: 1.0.0
+# Version: 1.2.0
 
 title = "varga.media gitleaks config"
 
-# Use default rules (covers GitHub tokens, AWS keys, OpenAI keys, generic secrets, etc.)
-# Only extend with allowlist below.
+# Keep the upstream detector set active (GitHub, AWS, OpenAI, generic secrets,
+# etc.) and layer only repository-specific false-positive handling on top.
+[extend]
+  useDefault = true
 
 [allowlist]
   description = "Known false positives: template variables, placeholders, documentation"
@@ -30,10 +32,44 @@ title = "varga.media gitleaks config"
     '''=CHANGE_ME''',
   ]
 
-  # Files that are expected to contain secret-like patterns (documentation, templates)
+  # Deployment templates contain placeholders by design. Documentation remains
+  # in scope because runbooks and audit evidence can contain copied credentials.
+  # These additional entries are narrowly scoped, reviewed fixture/evidence
+  # paths. Do not reintroduce extension-wide exclusions such as `\.md$`.
   paths = [
     '''env\.template$''',
-    '''\.md$''',
     '''\.example$''',
     '''\.sample$''',
+    '''^90_reports/kb-injection-analysis-2026-06-15/''',
+    '''^90_reports/kb-sota-loop-2026-07-06-to-2026-07-16/shadow/g1-production-equivalent-current-rescue-on-2026-07-11T1606\.json$''',
+    '''^\.claude/agents/_full/scout-report-suggest-fast\.md$''',
+    '''^00_infos/details/secrets-handbook\.md$''',
+    '''^00_infos/runtime/loops/sprint-infra-platform-consolidation-2026-05-16-prompt\.md$''',
+    '''^00_infos/runtime/loops/sprint-memory-pyramid-a-a1-safety-fixtures-kill-switch-2026-05-05\.md$''',
+    '''^85_code/external_pipeline/tests/test_pipeline_e2e\.py$''',
+    '''^85_code/knowledge_broker/eval/context_engine_gold_cases_2026_05_28\.yaml$''',
+    # NVL-Sabotage-Kanarienvogel: absichtlich nicht-existenter Anker-String
+    # (SABOTAGE_TOKEN), kein Credential. Gehaertete Gates seit #353 (2026-09-02).
+    '''^85_code/knowledge_broker/eval/nvl_probe\.py$''',
+    # Test-Fixture: printf 'token = "..."' als Quell-Kaputt-Simulation (Historie
+    # cdb88c1f, Zeile inzwischen entfernt; Gitleaks scannt alle Commits).
+    '''^87_tests/unit/test_fleet_fullcheck_semantik\.py$''',
+    '''^85_code/knowledge_broker/tests/test_session_context_writeback\.py$''',
+    '''^85_code/knowledge_broker/tests/test_vector_retrieval\.py$''',
+    '''^85_code/knowledge_broker/tests/test_vector_sources\.py$''',
+    '''^87_tests/integration/test_external_pipeline_e2e\.py$''',
+    '''^87_tests/integration/test_precommit_hook\.py$''',
+    '''^87_tests/unit/test_cf_access\.py$''',
+    '''^87_tests/unit/test_kb_auth\.py$''',
+    '''^87_tests/unit/test_kb_negative_paths\.py$''',
+    '''^87_tests/unit/test_workflow_engine/test_cost_ledger\.py$''',
+    '''^87_tests/unit/test_workflow_engine/test_credential_lifecycle\.py$''',
+    '''^87_tests/unit/test_workflow_engine/test_redaction\.py$''',
+    '''^99_archiv/90_reports/2026-05/INFRA-READINESS-MEGA-LOOP-EVIDENCE-2026-05-23\.md$''',
+    '''^99_archiv/90_reports/2026-05/audit-drill-data-integrity-2026-05-21\.md$''',
+    '''^99_archiv/90_reports/2026-05/sprint-kb-context-engine-2026-05-27/deep-retrieval-snapshots-2026-05-28\.json$''',
+    '''^99_archiv/90_reports/2026-05/sprint-kb-context-engine-2026-05-27/e2-live-context-engine-snapshots-2026-05-28\.json$''',
+    '''^99_archiv/monitoring-audit/deploy-log\.md$''',
+    '''^99_archiv/research/mattermost-websocket-realtime/research\.md$''',
+    '''^99_archiv/tests-orphaned-20260329/test_cf_access\.py$''',
   ]
